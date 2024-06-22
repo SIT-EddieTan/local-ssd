@@ -9,6 +9,10 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'npm install'
+                sh 'sudo apt-get install -y docker.io'
+                sh 'sudo systemctl start docker'
+                sh 'sudo systemctl enable docker'
+                sh 'sudo usermod -aG docker jenkins'
             }
         }
         stage('Test') {
