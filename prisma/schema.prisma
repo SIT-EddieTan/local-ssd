@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id                     String                 @id @default(uuid())
+  name                   String?
+  email                  String                 @unique /// @zod.string.email()
+  emailVerified          DateTime?
+  password               String /// @zod.string.min(8, { message: "Password must be at least 8 characters long" })
+  role                   UserRole               @default(USER)
+  image                  String?
+  isTwoFactorAuthEnabled Boolean                @default(true)
+  twoFactorConfirmation  TwoFactorConfirmation?
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  twoFactorConfirmationId String?  @unique
+}
+
+model VerificationToken {
+  id       String   @id @default(uuid())
+  email    String
+  token    String   @unique
+  expireAt DateTime
+
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id       String   @id @default(uuid())
+  email    String
+  token    String   @unique
+  expireAt DateTime
+
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
+}
+
+model TwoFactorToken {
+  id       String   @id @default(uuid())
+  email    String
+  token    String   @unique
+  expireAt DateTime
+
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
+}
+
+model TwoFactorConfirmation {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId])
+}
